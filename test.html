@@ -1,0 +1,127 @@
+<html lang="en" class="js-focus-visible" data-js-focus-visible="">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1">
+    <style type="text/css">
+    </style>
+</head>
+
+<body>
+</body>
+
+<script>
+    /**
+     * @param {number} n
+     * @param {number} minProfit
+     * @param {number[]} group
+     * @param {number[]} profit
+     * @return {number}
+     */
+    var profitableSchemes = function (n, minProfit, group, profit) {
+        let jobCount = group.length;
+        let jobMap = jobMapSort(getJobMap(group, profit));
+        group.sort((a, b) => {
+            return a - b
+        });
+        profit = getEnabledProfitList(n, jobMap, group);
+        console.log('profit', profit)
+        let profitSingle = profit.filter(v => {
+            return v >= minProfit
+        });
+        if (minProfit <= 0) {
+            profitSingle.push(0)
+        }
+        let result = 0;
+        let profitObj = {};
+        let profitArr = profitSingle;
+        if (group.length > 1) {
+            for (let index = 2; index <= group.length; index++) {
+                profitObj[index] = calulator(n, 0, index, 0, true);
+            }
+        }
+        console.log('-----------------')
+        console.log(profitArr)
+        console.log('-----------------')
+
+        function calulator(last, pos, deep, cur, isFirst) {
+            let curProfit = cur || 0;
+            for (let index = pos; index < group.length; index++) {
+                console.log(last)
+                console.log(group[index + 1])
+                if (group[index + 1] && last < group[index + 1]) {
+                    if (isFirst) {
+                        curProfit = profit[index];
+                    }
+                    if (curProfit >= minProfit && !isFirst) {
+                        profitArr.push(curProfit)
+                    }
+                    break;
+                } else {
+                last -= group[index];
+                    curProfit += profit[index];
+                    if (deep >= 1) {
+                        calulator(last, index + 1, --deep, curProfit, false)
+                    } else {
+                        if (curProfit >= minProfit) {
+                            profitArr.push(curProfit)
+                        }
+                    }
+                }
+            }
+        }
+        return profitArr.length
+    };
+
+    function getEnabledProfitList(n, jobMap, group) {
+        let temp = [];
+        let profit = [];
+        let keys = Object.keys(jobMap).sort((a, b) => {
+            return a - b
+        });
+        keys.forEach(k => {
+            profit = profit.concat(jobMap[k])
+        })
+        let list = profit.map((v, i) => {
+            if (n >= group[i]) {
+                return v
+            } else {
+                temp.push(i)
+            }
+        })
+        temp.reverse().forEach(i => {
+            group.splice(i, 1)
+        })
+        return list
+    }
+
+    function getJobMap(group, profit) {
+        let jobMap = {};
+        group.forEach((count, i) => {
+            if (jobMap[count]) {
+                jobMap[count].push(profit[i]);
+            } else {
+                jobMap[count] = [profit[i]]
+            }
+        })
+        return jobMap
+    }
+
+    function jobMapSort(jobMap) {
+        Object.keys(jobMap).forEach(key => {
+            if (jobMap[key].length > 1) {
+                jobMap[key].sort((a, b) => {
+                    return b - a
+                });
+            }
+        });
+        return jobMap
+    }
+    profitableSchemes(
+        5,
+        3,
+        [2, 2],
+        [2, 3])
+</script>
+
+</html>
